@@ -16,16 +16,17 @@ class Entities:
 
 
 class Mario(Entities):
-    def __init__(self, activityStatus):
+    def __init__(self, activityStatus, coins):
         self.activityStatus = activityStatus
+        self.coins = coins
 
     def powerUp(self):
-        print('You consumed the mushroom and gained a power up!')
+        print('\nYou consumed the mushroom and gained a power up!')
 
 
 class Mushroom(Entities):
     def __init__(self, activityStatus):
-        self.activityStatus
+        self.activityStatus = activityStatus
 
 
 class Tiles:
@@ -56,21 +57,21 @@ class BrickTile(Tiles):
         if (self.isActive):
             self.toggleActivity()
             brickNav.remove()
-            print('You broke the brick tile!')
-
+            print('\nYou broke the brick tile!')
 
 class QuestionCoinTile(Tiles):
     def __init__(self, activityStatus, hitTimes):
         self.activityStatus = activityStatus
         self.hitTimes = hitTimes
 
-    def onHit(self):
-        self.hitTimes -= 1
+    def onHit(self,mario):
         if(self.hitTimes > 0):
-            coins += 10
+            mario.coins += 10
+            print('\nCha Ching! 10 coins!')
         else:
             self.toggleActivity()
-            print('You have exhausted all hits to this tile!')
+            print('\nYou have exhausted all hits to this tile!')
+        self.hitTimes -= 1
 
 
 class QuestionMushroomTile(Tiles):
@@ -79,12 +80,13 @@ class QuestionMushroomTile(Tiles):
         self.hitTimes = 1
 
     def onHit(self, mushroom):
-        self.hitTimes -= 1
         if(self.hitTimes > 0):
             mushroom.toggleActivity()
-            print('A mushroom has been released!')
+            print('\nA mushroom has been released!')
+            self.toggleActivity()
         else:
-            print('You have exhausted all hits to this tile!')
+            print('\nYou have exhausted all hits to this tile!')
+        self.hitTimes -= 1
 
 
 class Portals:
@@ -105,19 +107,23 @@ class Space:
         if (self.xCord + 1 != portalNav.xCord):
             self.xCord += 1
         else:
-            print('Can\'t move coz of the tunnel!')
+            print('\nCan\'t move coz of the tunnel!')
 
     def moveLeft(self):
         if(self.xCord - 1 != -1):
             self.xCord -= 1
         else:
-            print('Cant move further left!')
+            print('\nCant move further left!')
 
-    def moveUp(self, tileList):
+    def moveUp(self, tileList, mario, mushroom):
         for i in range(len(tileList)):
             if (tileList[i].xCord == self.xCord and tileList[i].yCord == self.yCord + 1):
-                tileList[i].onHit()
-                break
+                if(i == 0 or i == 2 or i == 4):
+                    tileListObj[i].onHit(tileList[i])
+                elif(i == 1):
+                    tileListObj[i].onHit(mario)
+                else:
+                    tileListObj[i].onHit(mushroom)
 
     def moveDown(self, portalNav, portal):
         if (portalNav.xCord == self.xCord and portalNav.yCord + 1 == self.yCord):
@@ -131,10 +137,7 @@ class Space:
             self.xCord += 1
             self.yCord += 1
         else:
-            self.moveRight()
-
-
-coins = 0
+            self.moveRight(portalNav)
 
 # Location objects
 marioNav = Space(0, 0)
@@ -147,7 +150,7 @@ quesMNav = Space(7, 1)
 mushroomNav = Space(7, 2)
 
 # Actual Entity obejcts
-mario = Mario(True)
+mario = Mario(True,0)
 mushroom = Mushroom(False)
 brick1 = BrickTile(True)
 brick2 = BrickTile(True)
@@ -158,6 +161,7 @@ quesM = QuestionMushroomTile(True)
 
 f1 = 0
 tileList = [brick1Nav, quesCNav, brick2Nav, quesMNav, brick3Nav]
+tileListObj = [brick1, quesC, brick2, quesM, brick3]
 
 print('----------------------------------------')
 print('WELCOME TO SIMPLE MARIO GAME!')
@@ -173,19 +177,20 @@ while (True):
 
     if (mushroom.isActive and mushroomNav.xCord == marioNav.xCord and mushroomNav.yCord == marioNav.yCord):
         mushroom.toggleActivity()
+        mushroomNav.remove()
         mario.powerUp()
 
     print('\n----------------------------------------')
-    print('Your Surroundings:')
+    print('Your Surroundings and Coins:')
     print('----------------------------------------\n')
 
     if (marioNav.xCord == 4 or marioNav.xCord == 6 or marioNav.xCord == 8):
-        if (tileList[marioNav.xCord - 4].isActive()):
+        if (tileListObj[marioNav.xCord - 4].isActive()):
             print('Up: There is a brick tile above you!')
         else:
             print('Up: Nothing.')
     elif (marioNav.xCord == 5 or marioNav.xCord == 7):
-        if (tileList[marioNav.xCord - 4].isActive()):
+        if (tileListObj[marioNav.xCord - 4].isActive()):
             print('Up: there is a question mark tile above you!')
         else:
             print('Up: Static question mark tile.')
@@ -207,7 +212,9 @@ while (True):
     if(marioNav.xCord == portalNav.xCord and marioNav.yCord == portalNav.yCord + 1):
         print('Down: Exit!')
     else:
-        print('Down: Nothing.')
+        print('Down: Nothing.\n')
+
+    print('You have',mario.coins,'coins!\n')
 
     print('\n----------------------------------------')
     print('Choose your next move:')
@@ -223,15 +230,15 @@ while (True):
     k = input('Your move key: ')
 
     if (k == 'w'):
-        marioNav.moveUp()
+        marioNav.moveUp(tileList,mario,mushroom)
     elif(k == 'a'):
         marioNav.moveLeft()
     elif(k == 'd'):
-        marioNav.moveRight()
+        marioNav.moveRight(portalNav)
     elif(k == 's'):
-        marioNav.moveDown()
+        marioNav.moveDown(portalNav,portal)
     elif(k == 'e'):
-        marioNav.moveUpRight()
+        marioNav.moveUpRight(portalNav)
     elif(k == 'q'):
         marioNav.moveUpLeft()
     else:
