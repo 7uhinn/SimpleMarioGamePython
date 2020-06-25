@@ -133,4 +133,106 @@ class Space:
         else:
             self.moveRight()
 
+
 coins = 0
+
+# Location objects
+marioNav = Space(0, 0)
+portalNav = Space(12, 0)
+brick1Nav = Space(4, 1)
+brick2Nav = Space(6, 1)
+brick3Nav = Space(8, 1)
+quesCNav = Space(5, 1)
+quesMNav = Space(7, 1)
+mushroomNav = Space(7, 2)
+
+# Actual Entity obejcts
+mario = Mario(True)
+mushroom = Mushroom(False)
+brick1 = BrickTile(True)
+brick2 = BrickTile(True)
+brick3 = BrickTile(True)
+portal = Portals()
+quesC = QuestionCoinTile(True, 5)
+quesM = QuestionMushroomTile(True)
+
+f1 = 0
+tileList = [brick1Nav, quesCNav, brick2Nav, quesMNav, brick3Nav]
+
+print('----------------------------------------')
+print('WELCOME TO SIMPLE MARIO GAME!')
+print('----------------------------------------\n')
+
+while (True):
+    if (mushroom.isActive):
+        locs = [[8, 1], [9, 0]]
+        if (f1 < 2):
+            mushroomNav.xCord = locs[f1][0]
+            mushroomNav.yCord = locs[f1][1]
+        f1 += 1
+
+    if (mushroom.isActive and mushroomNav.xCord == marioNav.xCord and mushroomNav.yCord == marioNav.yCord):
+        mushroom.toggleActivity()
+        mario.powerUp()
+
+    print('\n----------------------------------------')
+    print('Your Surroundings:')
+    print('----------------------------------------\n')
+
+    if (marioNav.xCord == 4 or marioNav.xCord == 6 or marioNav.xCord == 8):
+        if (tileList[marioNav.xCord - 4].isActive()):
+            print('Up: There is a brick tile above you!')
+        else:
+            print('Up: Nothing.')
+    elif (marioNav.xCord == 5 or marioNav.xCord == 7):
+        if (tileList[marioNav.xCord - 4].isActive()):
+            print('Up: there is a question mark tile above you!')
+        else:
+            print('Up: Static question mark tile.')
+    else:
+        print('Up: Nothing.')
+
+    if (marioNav.xCord == portalNav.xCord - 1):
+        print('Right: An exit tunnel!')
+    elif(marioNav.xCord == mushroomNav.xCord - 1):
+        print('Right: A power up mushroom!')
+    else:
+        print('Right: Nothing.')
+
+    if(marioNav.xCord == mushroomNav.xCord + 1):
+        print('Left: A power up mushroom!')
+    else:
+        print('Left: Nothing.')
+
+    if(marioNav.xCord == portalNav.xCord and marioNav.yCord == portalNav.yCord + 1):
+        print('Down: Exit!')
+    else:
+        print('Down: Nothing.')
+
+    print('\n----------------------------------------')
+    print('Choose your next move:')
+    print('----------------------------------------\n')
+
+    print('W: Jump')
+    print('A: Left')
+    print('D: Right')
+    print('S: Down')
+    print('E: Right Jump')
+    print('Q: Left Jump\n')
+
+    k = input('Your move key: ')
+
+    if (k == 'w'):
+        marioNav.moveUp()
+    elif(k == 'a'):
+        marioNav.moveLeft()
+    elif(k == 'd'):
+        marioNav.moveRight()
+    elif(k == 's'):
+        marioNav.moveDown()
+    elif(k == 'e'):
+        marioNav.moveUpRight()
+    elif(k == 'q'):
+        marioNav.moveUpLeft()
+    else:
+        print('Invalid!')
